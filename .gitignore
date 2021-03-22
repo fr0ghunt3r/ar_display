@@ -1,0 +1,4 @@
+__pycache__/
+activate.sh
+.*.swp
+.DS_Store
