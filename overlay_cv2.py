@@ -35,9 +35,9 @@ class map_class(object):
 
 class overlay(object):
     def __init__(self, slam_map):
-        self.panel_res   = (80, 100, 3)
+        self.panel_res   = (100, 100, 3)
         self.panel_start = (10, 200)
-        self.print_variables = ("x", "y", "z", "R", "P", "Y", "ts")
+        self.print_variables = ("x", "y", "z", "x", "y", "z","w", "ts")
         self.slam_map = slam_map
         # for 3D arrow model
         self.obj = OBJ("./resources/arrow.obj", swapyz=True)
@@ -48,11 +48,15 @@ class overlay(object):
 
     def __call__(self, image, pose, timestamp):
         self.image = image
-        self.pose = pose
+        self.pose = self.parse(pose)
         self.timestamp = timestamp
         self.overlay()
         return self.image
 
+    def parse(self, string):
+        pose = [float(var) for var in string.replace(" ", "").split(",")[2:]]
+        return pose
+        
     def create_panel(self, res):
         self.panel = np.full(res, 255.0)
        
@@ -109,7 +113,7 @@ class overlay(object):
         for idx, var in enumerate(self.pose):
             text = f"{self.print_variables[idx]}: {self.pose[idx]} "
             cv2.putText(panel, text, (5, 10+(10*idx)), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 0, 0), 1, cv2.LINE_AA)
-        cv2.putText(panel, f"{self.print_variables[6]}: {self.timestamp} ", (5, 75), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 0, 0), 1, cv2.LINE_AA)
+        cv2.putText(panel, f"{self.print_variables[7]}: {self.timestamp} ", (5, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 0, 0), 1, cv2.LINE_AA)
         return panel 
 
     def overlay(self):
@@ -167,7 +171,8 @@ def main():
         for idx, (image, time) in enumerate(images):
             print(f"processing time of #{idx} of image: {time}")
             image = np.hstack((image, panel_right))
-            image = over_image(image, trans_list[int(idx * (len(trans_list)/len(images)))], "1234555")
+            #image = over_image(image, trans_list[int(idx * (len(trans_list)/len(images)))], "1234555")
+            image = over_image(image, "map, base_link, 3.71, 6.65, -0.06, 0.03, -0.07, 0.95, -0.29", "1234555")
             cv2.imshow('image', image) 
             cv2.waitKey(15)
     except Exception as e:
